@@ -32,7 +32,7 @@ This project uses de-identified data from Aspiranet, including:
 - Incident reports
 - Demographic information
 
-The primary dataset used for modeling (`cleaned_data.csv`) was preprocessed as part of a collaborative team effort. Initial data cleaning and integration across multiple raw sources were conducted prior to this analysis.
+The cleaned dataset (`cleaned_data.csv`) was prepared by a team member through prior data cleaning and merging of raw CANS, incident, and demographic data.
 
 ## Project Context
 
