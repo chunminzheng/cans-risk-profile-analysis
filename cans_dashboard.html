@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CANS Risk Profile Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --navy: #1e3a5f;
+    --blue: #2a4d7a;
+    --teal: #7aaed4;
+    --sky: #a8c8e0;
+    --amber: #e8c07a;
+    --coral: #e8917a;
+    --sage: #7ac4a0;
+    --lavender: #7aaed4;
+    --cream: #f8fafc;
+    --white: #ffffff;
+    --text: #2d3748;
+    --muted: #718096;
+    --border: #e2e8f0;
+
+    --A: #e8917a;
+    --B: #e8c07a;
+    --C: #7aaed4;
+    --D: #7ac4a0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--navy);
+    padding: 28px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #7aaed4;
+  }
+
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    color: var(--white);
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .header-left p {
+    color: #a8c8e0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .badge {
+    background: rgba(122,174,212,0.2);
+    border: 1px solid #7aaed4;
+    color: #a8c8e0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* NAV TABS */
+  nav {
+    background: var(--blue);
+    padding: 0 48px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .tab {
+    padding: 14px 22px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--white); }
+  .tab.active {
+    color: var(--sky);
+    border-bottom-color: var(--sky);
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 40px 48px;
+  }
+
+  .page { display: none; }
+  .page.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 32px;
+  }
+
+  /* GRID */
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+
+  /* PROFILE CARD */
+  .profile-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 24px;
+    border-top: 4px solid;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .profile-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+
+  .profile-card.A { border-color: var(--A); }
+  .profile-card.B { border-color: var(--B); }
+  .profile-card.C { border-color: var(--C); }
+  .profile-card.D { border-color: var(--D); }
+
+  .profile-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.A { background: var(--A); }
+  .dot.B { background: var(--B); }
+  .dot.C { background: var(--C); }
+  .dot.D { background: var(--D); }
+
+  .profile-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.05rem;
+    color: var(--navy);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--muted); }
+  .stat-value { font-weight: 600; color: var(--navy); }
+
+  .incident-rate-big {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 12px 0 4px;
+  }
+
+  .incident-rate-big.A { color: var(--A); }
+  .incident-rate-big.B { color: var(--B); }
+  .incident-rate-big.C { color: var(--C); }
+  .incident-rate-big.D { color: var(--D); }
+
+  .rate-label { font-size: 0.73rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* CHART CONTAINER */
+  .chart-box {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .chart-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+
+  .chart-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  canvas { width: 100% !important; }
+
+  /* DOMAIN BAR */
+  .domain-bar-wrap { margin-bottom: 10px; }
+  .domain-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    margin-bottom: 4px;
+  }
+  .domain-bar-label span:first-child { color: var(--muted); }
+  .domain-bar-label span:last-child { font-weight: 600; color: var(--navy); }
+  .bar-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+  }
+
+  /* FINDING CALLOUT */
+  .finding-box {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-left: 5px solid;
+    margin-bottom: 24px;
+  }
+
+  .finding-box.finding1 { border-color: #7aaed4; }
+  .finding-box.finding2 { border-color: #e8c07a; }
+
+  .finding-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .finding-tag.finding1 { color: #7aaed4; }
+  .finding-tag.finding2 { color: #e8c07a; }
+
+  .finding-headline {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+
+  .finding-desc {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .stat-highlights {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stat-highlight {
+    text-align: center;
+    padding: 16px 20px;
+    background: var(--cream);
+    border-radius: 8px;
+    min-width: 100px;
+    flex: 1;
+  }
+
+  .stat-highlight .big-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+  }
+
+  .stat-highlight .big-num.up { color: var(--C); }
+  .stat-highlight .big-num.down { color: var(--sage); }
+  .stat-highlight .big-num.orange { color: var(--B); }
+  .stat-highlight .stat-desc { font-size: 0.73rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+  /* INCIDENT TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:hover { background: var(--cream); }
+  tbody td { padding: 11px 14px; color: var(--text); }
+
+  .pct-cell { font-weight: 600; }
+
+  .mini-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mini-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .mini-bar-fill { height: 100%; border-radius: 3px; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* KPI ROW */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .kpi {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .kpi-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .kpi-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* SEARCH */
+  .search-input {
+    padding: 6px 12px 6px 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;
+    width: 180px;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { outline: none; border-color: var(--teal); }
+
+  /* FOOTER NOTE */
+  .footer-note {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-top: 32px;
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .footer-note strong { color: var(--text); }
+    font-size: 0.73rem;
+    color: var(--muted);
+    margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.5);
+    padding: 20px 0;
+    font-size: 0.75rem;
+    margin-top: 60px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>CANS Risk Profile Dashboard</h1>
+    <p></p>
+  </div>
+  <div class="header-right">
+    <span class="badge">n = 1,062 youth</span>
+    <span class="badge">2020 – 2025</span>
+  </div>
+</header>
+
+<nav>
+  <div class="tab active" onclick="showPage('overview')">Overview</div>
+  <div class="tab" onclick="showPage('profiles')">Risk Profiles</div>
+  <div class="tab" onclick="showPage('incidents')">Incident Rates</div>
+  <div class="tab" onclick="showPage('findings')">Key Findings</div>
+</nav>
+
+<main>
+
+  <!-- ======= PAGE: OVERVIEW ======= -->
+  <div class="page active" id="page-overview">
+    <h2 class="section-title">Program Overview</h2>
+    <p class="section-sub">Summary statistics across 1,062 youth, 2020–2025.</p>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-value">1,062</div>
+        <div class="kpi-label">Youth Assessed</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-value">31.5%</div>
+        <div class="kpi-label">Overall Incident Rate</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-value">84</div>
+        <div class="kpi-label">Complex Cases (2+ Incident Types)</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-value">4</div>
+        <div class="kpi-label">Risk Profiles Identified</div>
+      </div>
+    </div>
+
+    <div class="grid-4">
+      <div class="profile-card A">
+        <div class="profile-label"><span class="dot A"></span> Group A</div>
+        <div class="profile-name">Behavioral &amp; Risk</div>
+        <div class="incident-rate-big A">43.2%</div>
+        <div class="rate-label">Incident Rate</div>
+        <div style="margin-top:8px;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:43.2%;height:100%;background:var(--A);border-radius:3px"></div></div>
+        <div style="margin-top:16px">
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Behavioral/Emotional</span><span>1.55</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:51.7%;background:var(--A)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Life Functioning</span><span>1.40</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:46.7%;background:var(--A)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Risk Behaviors</span><span>1.06</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:35.3%;background:var(--A)"></div></div>
+          </div>
+        </div>
+        <div class="stat-row" style="margin-top:12px"><span class="stat-label">n</span><span class="stat-value">162 youth</span></div>
+      </div>
+
+      <div class="profile-card B">
+        <div class="profile-label"><span class="dot B"></span> Group B</div>
+        <div class="profile-name">Functioning-Driven</div>
+        <div class="incident-rate-big B">34.8%</div>
+        <div class="rate-label">Incident Rate</div>
+        <div style="margin-top:8px;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:34.8%;height:100%;background:var(--B);border-radius:3px"></div></div>
+        <div style="margin-top:16px">
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Behavioral/Emotional</span><span>1.04</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:34.7%;background:var(--B)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Life Functioning</span><span>0.76</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:25.3%;background:var(--B)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Risk Behaviors</span><span>0.51</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:17%;background:var(--B)"></div></div>
+          </div>
+        </div>
+        <div class="stat-row" style="margin-top:12px"><span class="stat-label">n</span><span class="stat-value">316 youth</span></div>
+      </div>
+
+      <div class="profile-card C">
+        <div class="profile-label"><span class="dot C"></span> Group C</div>
+        <div class="profile-name">High Acuity</div>
+        <div class="incident-rate-big C">34.9%</div>
+        <div class="rate-label">Incident Rate</div>
+        <div style="margin-top:8px;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:34.9%;height:100%;background:var(--C);border-radius:3px"></div></div>
+        <div style="margin-top:16px">
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Behavioral/Emotional</span><span>1.05</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--C)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Life Functioning</span><span>1.32</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:44%;background:var(--C)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Risk Behaviors</span><span>0.40</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:13.3%;background:var(--C)"></div></div>
+          </div>
+        </div>
+        <div class="stat-row" style="margin-top:12px"><span class="stat-label">n</span><span class="stat-value">215 youth</span></div>
+      </div>
+
+      <div class="profile-card D">
+        <div class="profile-label"><span class="dot D"></span> Group D</div>
+        <div class="profile-name">Low Acuity</div>
+        <div class="incident-rate-big D">18.3%</div>
+        <div class="rate-label">Incident Rate</div>
+        <div style="margin-top:8px;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:18.3%;height:100%;background:var(--D);border-radius:3px"></div></div>
+        <div style="margin-top:16px">
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Behavioral/Emotional</span><span>0.53</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:17.7%;background:var(--D)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Life Functioning</span><span>0.54</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:18%;background:var(--D)"></div></div>
+          </div>
+          <div class="domain-bar-wrap">
+            <div class="domain-bar-label"><span>Risk Behaviors</span><span>0.14</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:4.7%;background:var(--D)"></div></div>
+          </div>
+        </div>
+        <div class="stat-row" style="margin-top:12px"><span class="stat-label">n</span><span class="stat-value">366 youth</span></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="chart-box">
+        <div class="chart-title">Incident Rate by Profile</div>
+        <div class="chart-sub">% of youth with at least one incident in observation window</div>
+        <div style="position:relative;height:180px"><canvas id="overviewBarChart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Incident Rates by Category (Overall)</div>
+        <div class="chart-sub">% of all 1,062 youth experiencing each incident type</div>
+        <div style="position:relative;height:180px"><canvas id="categoryBarChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="chart-box">
+        <div class="chart-title">Age Distribution by Profile</div>
+        <div class="chart-sub">Number of youth per age group across risk profiles</div>
+        <div style="position:relative;height:180px"><canvas id="ageChart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Youth Count by Profile</div>
+        <div class="chart-sub">Number of youth in each risk profile (total n = 1,062)</div>
+        <div style="position:relative;height:180px"><canvas id="profilePieChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= PAGE: PROFILES ======= -->
+  <div class="page" id="page-profiles">
+    <h2 class="section-title">Risk Profile Comparison</h2>
+    <p class="section-sub">K-means clustering on intake CANS domain scores (silhouette = 0.393, k=4). Scores on a 0–3 scale: 0 = no need, 1 = monitor, 2 = action needed, 3 = immediate action.</p>
+
+    <!-- DOMAIN HEATMAP -->
+    <div class="chart-box" style="margin-bottom:24px">
+      <div class="chart-title">Domain Score Heatmap by Profile</div>
+      <div class="chart-sub">Color intensity reflects mean score — darker = higher need at intake</div>
+      <div id="heatmap" style="margin-top:16px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:16px;font-size:0.75rem;color:var(--muted)">
+        <span>Low (0)</span>
+        <div style="display:flex;gap:2px">
+          <div style="width:24px;height:12px;background:#eef5fb;border-radius:2px"></div>
+          <div style="width:24px;height:12px;background:#b8d5ea;border-radius:2px"></div>
+          <div style="width:24px;height:12px;background:#7aaed4;border-radius:2px"></div>
+          <div style="width:24px;height:12px;background:#3d7aaa;border-radius:2px"></div>
+          <div style="width:24px;height:12px;background:#1e3a5f;border-radius:2px"></div>
+        </div>
+        <span>High (2+)</span>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE ITEM TABLE -->
+    <div class="chart-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <div>
+          <div class="chart-title">CANS Items by Risk Profile</div>
+          <div class="chart-sub" style="margin-bottom:0">Mean intake score per item · Bold = ≥ 1.5 (action needed threshold)</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="text" class="search-input" id="itemSearch" placeholder="Search items..." oninput="filterItems()">
+          <select id="domainFilter" onchange="filterItems()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);cursor:pointer">
+            <option value="all">All Domains</option>
+            <option value="BE">Behavioral / Emotional</option>
+            <option value="LF">Life Functioning</option>
+            <option value="RB">Risk Behaviors</option>
+          </select>
+          <!-- Sort -->
+          <select id="sortBy" onchange="filterItems()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);cursor:pointer">
+            <option value="default">Default Order</option>
+            <option value="A">Sort by Group A ↓</option>
+            <option value="B">Sort by Group B ↓</option>
+            <option value="C">Sort by Group C ↓</option>
+            <option value="D">Sort by Group D ↓</option>
+          </select>
+          <!-- Highlight toggle -->
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--muted);cursor:pointer">
+            <input type="checkbox" id="highlightToggle" onchange="filterItems()" checked style="cursor:pointer">
+            Highlight ≥ 1.5
+          </label>
+        </div>
+      </div>
+
+      <!-- Profile header cards -->
+      <div style="display:grid;grid-template-columns:200px repeat(4,1fr);gap:4px;margin-bottom:4px">
+        <div></div>
+        <div style="background:#c0523a;color:white;border-radius:8px 8px 0 0;padding:10px 12px;text-align:center">
+          <div style="font-weight:700;font-size:0.85rem">Group A</div>
+          <div style="font-size:0.72rem;opacity:0.85">Behavioral &amp; Risk</div>
+          <div style="font-size:0.7rem;opacity:0.75;margin-top:2px">BE 1.55 · LF 1.40 · RB 1.06</div>
+        </div>
+        <div style="background:#9a7020;color:white;border-radius:8px 8px 0 0;padding:10px 12px;text-align:center">
+          <div style="font-weight:700;font-size:0.85rem">Group B</div>
+          <div style="font-size:0.72rem;opacity:0.85">Functioning-Driven</div>
+          <div style="font-size:0.7rem;opacity:0.75;margin-top:2px">BE 1.04 · LF 0.76 · RB 0.51</div>
+        </div>
+        <div style="background:#2a5f8a;color:white;border-radius:8px 8px 0 0;padding:10px 12px;text-align:center">
+          <div style="font-weight:700;font-size:0.85rem">Group C</div>
+          <div style="font-size:0.72rem;opacity:0.85">High Acuity</div>
+          <div style="font-size:0.7rem;opacity:0.75;margin-top:2px">BE 1.05 · LF 1.32 · RB 0.47</div>
+        </div>
+        <div style="background:#1e6a48;color:white;border-radius:8px 8px 0 0;padding:10px 12px;text-align:center">
+          <div style="font-weight:700;font-size:0.85rem">Group D</div>
+          <div style="font-size:0.72rem;opacity:0.85">Low Acuity</div>
+          <div style="font-size:0.7rem;opacity:0.75;margin-top:2px">BE 0.53 · LF 0.54 · RB 0.14</div>
+        </div>
+      </div>
+
+      <div id="itemTable"></div>
+      <p class="tooltip-note">* Click any column header to sort. Bold values ≥ 1.5 indicate the CANS action-needed threshold.</p>
+    </div>
+  </div>
+
+  <!-- ======= PAGE: INCIDENTS ======= -->
+  <div class="page" id="page-incidents">
+    <h2 class="section-title">Incident Rates by Profile</h2>
+    <p class="section-sub">% of youth in each profile who experienced at least one incident of each type during their observation window.</p>
+
+    <div class="chart-box" style="margin-bottom:24px">
+      <div class="chart-title">Incident Rate by Type &amp; Profile</div>
+      <div class="chart-sub">Grouped bar chart — hover over bars for values</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--A)"></div> Group A: Behavioral &amp; Risk</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--B)"></div> Group B: Functioning-Driven</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--C)"></div> Group C: High Acuity</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--D)"></div> Group D: Low Acuity</div>
+      </div>
+      <div style="position:relative;height:240px"><canvas id="incidentGroupedBar"></canvas></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-title">Detailed Incident Rates by Profile</div>
+      <div class="chart-sub">All values as % of youth in each group with ≥1 incident of that type</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Incident Type</th>
+            <th>Overall</th>
+            <th>Group A</th>
+            <th>Group B</th>
+            <th>Group C</th>
+            <th>Group D</th>
+          </tr>
+        </thead>
+        <tbody id="incidentTableBody"></tbody>
+      </table>
+      <p class="tooltip-note">* Incident rate = % of youth in that profile with at least one incident of this type during their observation window (intake to next assessment, or 90 days).</p>
+    </div>
+  </div>
+
+  <!-- ======= PAGE: FINDINGS ======= -->
+  <div class="page" id="page-findings">
+    <h2 class="section-title">Key Findings</h2>
+    <p class="section-sub">Two counterintuitive patterns surfaced through longitudinal trajectory and multi-incident analysis.</p>
+
+    <div class="finding-box finding1" style="margin-bottom:16px">
+      <div class="finding-tag finding1">Finding 1</div>
+      <div class="finding-headline">Group C's Suicide Risk Escalates — Despite Low Intake Scores</div>
+      <div class="finding-desc">Group C enters care looking stable on suicide risk (mean 0.43 out of 3). But across five assessment cycles, that score quietly climbs to 0.59 — a 37% increase. Meanwhile Group A, the most alarming group at intake (1.09), steadily improves to 0.55. A low intake score does not mean low ongoing risk.</div>
+      <div class="stat-highlights">
+        <div class="stat-highlight">
+          <div class="big-num" style="color:#7aaed4">+37%</div>
+          <div class="stat-desc">Group C suicide risk<br>increase (intake → A5)</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="big-num" style="color:#7ac4a0">−49%</div>
+          <div class="stat-desc">Group A suicide risk<br>decrease (intake → A5)</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="big-num" style="color:#7aaed4;font-size:1.3rem">0.43→0.59</div>
+          <div class="stat-desc">Group C · r = +0.08, p = .05</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="big-num" style="color:#e8917a;font-size:1.3rem">1.09→0.55</div>
+          <div class="stat-desc">Group A · r = −0.17, p &lt; .001</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-box" style="margin-bottom:24px">
+      <div class="chart-title">Suicide Risk Trajectory by Profile</div>
+      <div class="chart-sub">Mean suicide risk score (0–3) across assessments 1–5</div>
+      <div style="position:relative;height:280px"><canvas id="trajectoryChart"></canvas></div>
+    </div>
+
+    <div class="finding-box finding2" style="margin-bottom:16px">
+      <div class="finding-tag finding2">Finding 2</div>
+      <div class="finding-headline">Group B Drives 44% of Complex Cases — Despite Moderate Scores</div>
+      <div class="finding-desc">84 youth (7.9%) experienced incidents across 2+ distinct categories. Group B — with the 2nd-lowest risk behavior score at intake — contributes 44% of all complex cases and a higher within-group rate (11.7%) than Group A (10.5%). Functional impairment, not clinical severity, predicts case complexity.</div>
+      <div class="stat-highlights">
+        <div class="stat-highlight">
+          <div class="big-num" style="color:#e8c07a">44%</div>
+          <div class="stat-desc">of complex cases<br>from Group B</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="big-num" style="color:#e8c07a">11.7%</div>
+          <div class="stat-desc">within-group rate<br>Group B</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="big-num" style="color:#e8917a">10.5%</div>
+          <div class="stat-desc">within-group rate<br>Group A</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="big-num" style="color:var(--muted)">84</div>
+          <div class="stat-desc">total youth with<br>2+ incident types</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-box" style="margin-bottom:24px">
+      <div class="chart-title">Multi-Incident Youth by Profile</div>
+      <div class="chart-sub">Count of youth with 2+ distinct incident types</div>
+      <div style="position:relative;height:280px"><canvas id="multiIncidentChart"></canvas></div>
+    </div>
+
+    <div class="footer-note">
+      <strong>Methodology note.</strong> Risk profiles were derived from K-means clustering (k=4, silhouette = 0.393) on three intake CANS domain means. Domain scores were standardized before clustering. Incident observation windows span intake to next assessment date, or 90 days if no follow-up existed. Trajectory analyses use all assessment records with profile labels fixed at intake. All analyses are associational — causal claims require further study.
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div style="max-width:1300px;margin:0 auto;padding:0 48px;display:flex;justify-content:flex-end;align-items:center;gap:20px">
+    <a href="https://github.com/chunminzheng" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <a href="https://linkedin.com/in/chunmin-zheng" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      LinkedIn
+    </a>
+  </div>
+</footer>
+
+<!-- BACK TO TOP BUTTON -->
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="display:none;position:fixed;bottom:32px;right:32px;background:var(--navy);color:white;border:none;border-radius:50%;width:44px;height:44px;cursor:pointer;font-size:1.1rem;box-shadow:0 4px 16px rgba(0,0,0,0.2);transition:all 0.2s;z-index:999" onmouseover="this.style.background='#2a4d7a'" onmouseout="this.style.background='var(--navy)'">↑</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  // ---- NAVIGATION WITH HASH ROUTING ----
+  function showPage(id, updateHash) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t => {
+      if (t.getAttribute('onclick').includes("'" + id + "'")) t.classList.add('active');
+    });
+    if (updateHash !== false) window.location.hash = id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Load page from hash on startup
+  const validPages = ['overview', 'profiles', 'incidents', 'findings'];
+  const hash = window.location.hash.replace('#', '');
+  if (validPages.includes(hash)) {
+    showPage(hash, false);
+  }
+
+  // Back to top button
+  const btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+  });
+
+  Chart.defaults.font.family = "'DM Sans', sans-serif";
+  Chart.defaults.color = '#6b7280';
+
+  const colors = {
+    A: '#e8917a', B: '#e8c07a', C: '#7aaed4', D: '#7ac4a0'
+  };
+
+  // ---- OVERVIEW BAR ----
+  new Chart(document.getElementById('overviewBarChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Behavioral & Risk (A)', 'Functioning-Driven (B)', 'High Acuity (C)', 'Low Acuity (D)'],
+      datasets: [{
+        data: [43.2, 34.8, 34.9, 18.3],
+        backgroundColor: [colors.A, colors.B, colors.C, colors.D],
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw}% incident rate` }}
+      },
+      scales: {
+        y: { max: 55, ticks: { callback: v => v + '%' }, grid: { color: '#f0f0f0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ---- CATEGORY BAR ----
+  new Chart(document.getElementById('categoryBarChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Abuse/CPS', 'Suicide Related', 'Health/Medical', 'AWOL', 'Police', 'Behavioral', 'Self Harm', 'Placement'],
+      datasets: [{
+        data: [10.5, 7.3, 5.5, 5.1, 4.7, 4.2, 1.7, 1.4],
+        backgroundColor: '#7aaed4',
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw}%` }}
+      },
+      scales: {
+        x: { ticks: { callback: v => v + '%' }, grid: { color: '#f0f0f0' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ---- HEATMAP (SVG-based) ----
+  const heatmapData = [
+    { profile: 'Group A\nBehavioral & Risk', be: 1.55, lf: 1.40, rb: 1.06 },
+    { profile: 'Group B\nFunctioning-Driven', be: 1.04, lf: 0.76, rb: 0.51 },
+    { profile: 'Group C\nHigh Acuity',        be: 1.05, lf: 1.32, rb: 0.40 },
+    { profile: 'Group D\nLow Acuity',         be: 0.53, lf: 0.54, rb: 0.14 },
+  ];
+  const domains = ['Behavioral / Emotional', 'Life Functioning', 'Risk Behaviors'];
+  const domainKeys = ['be', 'lf', 'rb'];
+  const profileColors = [colors.A, colors.B, colors.C, colors.D];
+
+  function scoreToColor(val) {
+    const t = Math.min(val / 2, 1);
+    const r = Math.round(238 - t * (238 - 30));
+    const g = Math.round(245 - t * (245 - 58));
+    const b = Math.round(251 - t * (251 - 95));
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function textColor(val) { return val > 1.1 ? '#fff' : '#2d3748'; }
+
+  const cellW = 180, cellH = 64, labelW = 200, headerH = 48;
+  const svgW = labelW + cellW * 3 + 20;
+  const svgH = headerH + cellH * 4 + 20;
+
+  let svg = `<svg width="100%" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">`;
+
+  // Domain headers
+  domains.forEach((d, i) => {
+    const x = labelW + i * cellW + cellW / 2;
+    svg += `<text x="${x}" y="20" text-anchor="middle" font-size="12" font-weight="600" fill="#6b7280">${d}</text>`;
+  });
+
+  // Rows
+  heatmapData.forEach((row, ri) => {
+    const y = headerH + ri * cellH;
+    const lines = row.profile.split('\n');
+
+    // Profile label
+    svg += `<rect x="0" y="${y}" width="${labelW - 8}" height="${cellH - 4}" rx="6" fill="${profileColors[ri]}18"/>`;
+    svg += `<text x="12" y="${y + 22}" font-size="12" font-weight="700" fill="${profileColors[ri]}">${lines[0]}</text>`;
+    svg += `<text x="12" y="${y + 38}" font-size="11" fill="#6b7280">${lines[1]}</text>`;
+
+    domainKeys.forEach((key, ci) => {
+      const val = row[key];
+      const cx = labelW + ci * cellW;
+      const bg = scoreToColor(val);
+      const tc = textColor(val);
+      svg += `<rect x="${cx + 4}" y="${y + 2}" width="${cellW - 8}" height="${cellH - 8}" rx="8" fill="${bg}"/>`;
+      svg += `<text x="${cx + cellW/2}" y="${y + cellH/2 - 6}" text-anchor="middle" font-size="22" font-weight="700" fill="${tc}">${val.toFixed(2)}</text>`;
+      const label = val >= 1.5 ? '⚠ Action needed' : val >= 1.0 ? 'Monitor' : 'Low need';
+      svg += `<text x="${cx + cellW/2}" y="${y + cellH/2 + 14}" text-anchor="middle" font-size="10" fill="${tc === '#fff' ? 'rgba(255,255,255,0.8)' : '#9ca3af'}">${label}</text>`;
+    });
+  });
+
+  svg += '</svg>';
+  document.getElementById('heatmap').innerHTML = svg;
+
+  // ---- INTERACTIVE ITEM TABLE ----
+  const itemData = [
+    // domain, item, A, B, C, D
+    { domain: 'BE', label: 'Psychosis',                    A: 0.45, B: 0.18, C: 0.35, D: 0.08 },
+    { domain: 'BE', label: 'Impulsivity / Hyperactivity',  A: 1.50, B: 1.05, C: 1.02, D: 0.58 },
+    { domain: 'BE', label: 'Depression',                   A: 1.62, B: 1.10, C: 1.15, D: 0.62 },
+    { domain: 'BE', label: 'Anxiety',                      A: 1.55, B: 1.08, C: 1.10, D: 0.60 },
+    { domain: 'BE', label: 'Oppositional',                 A: 1.82, B: 1.12, C: 1.25, D: 0.58 },
+    { domain: 'BE', label: 'Conduct',                      A: 1.45, B: 0.80, C: 1.18, D: 0.40 },
+    { domain: 'BE', label: 'Anger Control',                A: 2.18, B: 1.15, C: 1.48, D: 0.55 },
+    { domain: 'BE', label: 'Substance Use',                A: 0.95, B: 0.60, C: 0.55, D: 0.28 },
+    { domain: 'BE', label: 'Adjustment to Trauma',         A: 1.90, B: 1.20, C: 1.28, D: 0.72 },
+    { domain: 'LF', label: 'Family Functioning',           A: 1.75, B: 1.42, C: 1.88, D: 0.72 },
+    { domain: 'LF', label: 'Living Situation',             A: 1.22, B: 0.68, C: 1.72, D: 0.42 },
+    { domain: 'LF', label: 'Social Functioning',           A: 1.38, B: 0.92, C: 1.25, D: 0.55 },
+    { domain: 'LF', label: 'Developmental / Intellectual', A: 0.72, B: 0.55, C: 0.88, D: 0.32 },
+    { domain: 'LF', label: 'Decision Making',              A: 1.60, B: 1.30, C: 1.42, D: 0.72 },
+    { domain: 'LF', label: 'School Behavior',              A: 1.55, B: 1.25, C: 1.30, D: 0.65 },
+    { domain: 'LF', label: 'School Achievement',           A: 1.52, B: 1.28, C: 1.28, D: 0.68 },
+    { domain: 'LF', label: 'School Attendance',            A: 1.48, B: 1.55, C: 1.35, D: 0.78 },
+    { domain: 'LF', label: 'Medical / Physical',           A: 0.62, B: 0.45, C: 0.72, D: 0.28 },
+    { domain: 'LF', label: 'Sexual Development',           A: 0.38, B: 0.22, C: 0.45, D: 0.12 },
+    { domain: 'LF', label: 'Sleep',                        A: 0.88, B: 0.72, C: 0.95, D: 0.45 },
+    { domain: 'RB', label: 'Suicide Risk',                 A: 1.62, B: 0.61, C: 0.43, D: 0.22 },
+    { domain: 'RB', label: 'Non-Suicidal Self-Injury',     A: 0.88, B: 0.38, C: 0.48, D: 0.12 },
+    { domain: 'RB', label: 'Other Self-Harm',              A: 0.72, B: 0.42, C: 0.38, D: 0.10 },
+    { domain: 'RB', label: 'Danger to Others',             A: 1.10, B: 0.52, C: 0.72, D: 0.22 },
+    { domain: 'RB', label: 'Sexual Aggression',            A: 0.30, B: 0.18, C: 0.22, D: 0.05 },
+    { domain: 'RB', label: 'Delinquent Behavior',          A: 0.85, B: 0.55, C: 0.42, D: 0.15 },
+    { domain: 'RB', label: 'Runaway',                      A: 0.72, B: 0.48, C: 0.48, D: 0.12 },
+    { domain: 'RB', label: 'Intentional Misbehavior',      A: 1.15, B: 0.72, C: 0.62, D: 0.18 },
+  ];
+
+  const domainLabels = { BE: 'Behavioral / Emotional Needs', LF: 'Life Functioning', RB: 'Risk Behaviors' };
+  const domainColors = { BE: '#c0392b', LF: '#2471a3', RB: '#1e8449' };
+  const profileCols = ['A','B','C','D'];
+
+  function scoreCell(val, highlight) {
+    const isBold = val >= 1.5;
+    const bg = highlight && isBold ? 'background:rgba(220,50,50,0.08);' : '';
+    const fw = isBold ? 'font-weight:700;' : '';
+    const color = isBold ? `color:${highlight ? '#c0392b' : 'var(--navy)'};` : 'color:var(--muted);';
+    const pct = Math.min((val / 3) * 100, 100);
+    const barColor = profileCols.indexOf('A') !== -1 ? [colors.A, colors.B, colors.C, colors.D] : [];
+    return `<td style="padding:9px 14px;text-align:center;${bg}${fw}${color}font-size:0.82rem">${val.toFixed(2)}</td>`;
+  }
+
+  function renderTable() {
+    const domainFilter = document.getElementById('domainFilter').value;
+    const sortBy = document.getElementById('sortBy').value;
+    const highlight = document.getElementById('highlightToggle').checked;
+    const searchEl = document.getElementById('itemSearch');
+    const searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
+
+    let data = domainFilter === 'all' ? [...itemData] : itemData.filter(d => d.domain === domainFilter);
+    if (searchTerm) data = data.filter(d => d.label.toLowerCase().includes(searchTerm));
+    if (sortBy !== 'default') data = [...data].sort((a, b) => b[sortBy] - a[sortBy]);
+
+    const profileColorMap = { A: colors.A, B: colors.B, C: colors.C, D: colors.D };
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:0.82rem">`;
+    html += `<thead><tr>
+      <th style="text-align:left;padding:10px 14px;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);width:200px">CANS Item</th>
+      ${profileCols.map(p => `<th onclick="sortByProfile('${p}')" style="text-align:center;padding:10px 14px;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${profileColorMap[p]};border-bottom:2px solid var(--border);cursor:pointer;user-select:none" title="Click to sort">Group ${p} ↕</th>`).join('')}
+    </tr></thead><tbody>`;
+
+    let lastDomain = null;
+    data.forEach((row, i) => {
+      if ((domainFilter === 'all') && row.domain !== lastDomain) {
+        lastDomain = row.domain;
+        html += `<tr><td colspan="5" style="padding:10px 14px 6px;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${domainColors[row.domain]};border-top:${i > 0 ? '2px solid var(--border)' : 'none'}">${domainLabels[row.domain]}</td></tr>`;
+      }
+
+      const maxVal = Math.max(row.A, row.B, row.C, row.D);
+      const bgStripe = i % 2 === 0 ? '' : 'background:#fafafa;';
+
+      html += `<tr style="${bgStripe}transition:background 0.15s" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='${i%2===0?'':'#fafafa'}'">`;
+      html += `<td style="padding:9px 14px;font-size:0.82rem;color:var(--text)">${row.label}</td>`;
+
+      profileCols.forEach((p, pi) => {
+        const val = row[p];
+        const isBold = val >= 1.5;
+        const isMax = val === maxVal && maxVal > 0.5;
+        const bg = highlight && isBold ? 'background:rgba(220,50,50,0.07);' : isMax ? `background:${profileColorMap[p]}10;` : '';
+        const fw = isBold ? 'font-weight:700;' : '';
+        const color = isBold && highlight ? 'color:#c0392b;' : isMax ? `color:${profileColorMap[p]};` : 'color:var(--muted);';
+        html += `<td style="padding:9px 14px;text-align:center;${bg}${fw}${color}font-size:0.82rem">${val.toFixed(2)}${isBold ? ' ●' : ''}</td>`;
+      });
+
+      html += `</tr>`;
+    });
+
+    html += `</tbody></table>`;
+    document.getElementById('itemTable').innerHTML = html;
+  }
+
+  function filterItems() { renderTable(); }
+  function sortByProfile(p) {
+    document.getElementById('sortBy').value = p;
+    renderTable();
+  }
+
+  renderTable();
+
+  // ---- INCIDENT GROUPED BAR ----
+  const incidentTypes = ['Abuse/CPS', 'Suicide Related', 'AWOL', 'Behavioral', 'Health/Medical', 'Police'];
+  const incidentData = {
+    A: [15.4, 8.0, 7.4, 4.9, 4.9, 10.5],
+    B: [10.8, 8.9, 5.4, 5.7, 7.0, 6.6],
+    C: [14.0, 8.4, 7.9, 5.1, 5.6, 4.2],
+    D: [5.7, 4.9, 2.2, 2.2, 4.4, 0.8],
+  };
+
+  new Chart(document.getElementById('incidentGroupedBar'), {
+    type: 'bar',
+    data: {
+      labels: incidentTypes,
+      datasets: [
+        { label: 'Group A', data: incidentData.A, backgroundColor: colors.A, borderRadius: 4 },
+        { label: 'Group B', data: incidentData.B, backgroundColor: colors.B, borderRadius: 4 },
+        { label: 'Group C', data: incidentData.C, backgroundColor: colors.C, borderRadius: 4 },
+        { label: 'Group D', data: incidentData.D, backgroundColor: colors.D, borderRadius: 4 },
+      ]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}%` }}
+      },
+      scales: {
+        y: { ticks: { callback: v => v + '%' }, grid: { color: '#f0f0f0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ---- INCIDENT TABLE ----
+  const allIncidentData = {
+    'Abuse/CPS Report': { overall: 10.5, A: 15.4, B: 10.8, C: 14.0, D: 5.7 },
+    'Suicide Related': { overall: 7.3, A: 8.0, B: 8.9, C: 8.4, D: 4.9 },
+    'AWOL/Child Absence': { overall: 5.1, A: 7.4, B: 5.4, C: 7.9, D: 2.2 },
+    'Behavioral Incidents': { overall: 4.2, A: 4.9, B: 5.7, C: 5.1, D: 2.2 },
+    'Health/Medical': { overall: 5.5, A: 4.9, B: 7.0, C: 5.6, D: 4.4 },
+    'Self Harm': { overall: 1.7, A: 3.1, B: 2.5, C: 1.4, D: 0.5 },
+    'Placement Changes': { overall: 1.4, A: 1.9, B: 2.2, C: 0.5, D: 1.1 },
+    'Police Involvement': { overall: 4.7, A: 10.5, B: 6.6, C: 4.2, D: 0.8 },
+  };
+
+  const tbody = document.getElementById('incidentTableBody');
+  Object.entries(allIncidentData).forEach(([type, rates]) => {
+    const maxVal = Math.max(rates.A, rates.B, rates.C, rates.D);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${type}</strong></td>
+      <td class="pct-cell">${rates.overall}%</td>
+      <td><div class="mini-bar"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${(rates.A/maxVal)*100}%;background:${colors.A}"></div></div><span style="font-size:0.78rem;font-weight:600;color:${colors.A}">${rates.A}%</span></div></td>
+      <td><div class="mini-bar"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${(rates.B/maxVal)*100}%;background:${colors.B}"></div></div><span style="font-size:0.78rem;font-weight:600;color:${colors.B}">${rates.B}%</span></div></td>
+      <td><div class="mini-bar"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${(rates.C/maxVal)*100}%;background:${colors.C}"></div></div><span style="font-size:0.78rem;font-weight:600;color:${colors.C}">${rates.C}%</span></div></td>
+      <td><div class="mini-bar"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${(rates.D/maxVal)*100}%;background:${colors.D}"></div></div><span style="font-size:0.78rem;font-weight:600;color:${colors.D}">${rates.D}%</span></div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // ---- AGE GROUPED BAR ----
+  new Chart(document.getElementById('ageChart'), {
+    type: 'bar',
+    data: {
+      labels: ['0–5', '6–10', '11–14', '15–18', '19+'],
+      datasets: [
+        { label: 'Group A: Behavioral & Risk', data: [2, 20, 73, 67, 0],   backgroundColor: colors.A + 'cc', borderColor: colors.A, borderWidth: 1.5, borderRadius: 4 },
+        { label: 'Group B: Functioning-Driven', data: [8, 73, 109, 125, 1], backgroundColor: colors.B + 'cc', borderColor: colors.B, borderWidth: 1.5, borderRadius: 4 },
+        { label: 'Group C: High Acuity',        data: [4, 35, 80, 96, 0],  backgroundColor: colors.C + 'cc', borderColor: colors.C, borderWidth: 1.5, borderRadius: 4 },
+        { label: 'Group D: Low Acuity',         data: [22, 106, 107, 127, 4], backgroundColor: colors.D + 'cc', borderColor: colors.D, borderWidth: 1.5, borderRadius: 4 },
+      ]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} youth` } }
+      },
+      scales: {
+        x: { grid: { display: false }, title: { display: true, text: 'Age group (years)' } },
+        y: { grid: { color: '#f0f0f0' }, title: { display: true, text: 'Number of youth' } }
+      }
+    }
+  });
+
+  // ---- PROFILE COUNT HORIZONTAL BAR ----
+  new Chart(document.getElementById('profilePieChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Group A\nBehavioral & Risk', 'Group B\nFunctioning-Driven', 'Group C\nHigh Acuity', 'Group D\nLow Acuity'],
+      datasets: [{
+        data: [162, 316, 215, 366],
+        backgroundColor: [colors.A + 'cc', colors.B + 'cc', colors.C + 'cc', colors.D + 'cc'],
+        borderColor: [colors.A, colors.B, colors.C, colors.D],
+        borderWidth: 2,
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw} youth (${(ctx.raw/1062*100).toFixed(1)}%)` }}
+      },
+      scales: {
+        x: { title: { display: true, text: 'Number of youth' }, grid: { color: '#f0f0f0' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('trajectoryChart'), {
+    type: 'line',
+    data: {
+      labels: ['Intake', 'A2', 'A3', 'A4', 'A5'],
+      datasets: [
+        { label: 'Group A', data: [1.088, 0.958, 0.925, 0.762, 0.552], borderColor: colors.A, backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: colors.A, tension: 0.3 },
+        { label: 'Group B', data: [0.613, 0.615, 0.524, 0.598, 0.531], borderColor: colors.B, backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: colors.B, tension: 0.3 },
+        { label: 'Group C', data: [0.433, 0.465, 0.548, 0.556, 0.592], borderColor: colors.C, backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: colors.C, tension: 0.3 },
+        { label: 'Group D', data: [0.221, 0.243, 0.281, 0.229, 0.267], borderColor: colors.D, backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: colors.D, tension: 0.3 },
+      ]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(2)}` }}
+      },
+      scales: {
+        y: { min: 0, max: 1.3, title: { display: true, text: 'Suicide Risk Score' }, grid: { color: '#f0f0f0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ---- MULTI INCIDENT CHART ----
+  new Chart(document.getElementById('multiIncidentChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Group B (Functioning-Driven)', 'Group C (High Acuity)', 'Group A (Behavioral & Risk)', 'Group D (Low Acuity)'],
+      datasets: [{
+        data: [37, 18, 17, 12],
+        backgroundColor: [colors.B, colors.C, colors.A, colors.D],
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw} youth with 2+ incident types` }}
+      },
+      scales: {
+        x: { title: { display: true, text: 'Number of youth' }, grid: { color: '#f0f0f0' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+</body>
+</html>
